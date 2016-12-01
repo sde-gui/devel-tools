@@ -1,0 +1,48 @@
+#!/bin/sh
+
+set -e
+
+PROJECT_DIR="${PROJECT_DIR-}"
+
+if [ "x$PROJECT_DIR" = "x" ] ; then
+    if [ -d ./.git ] ; then
+        PROJECT_DIR=".."
+    else
+        PROJECT_DIR="."
+    fi
+fi
+
+printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} project directory: ${CODE_COLOR_RED}%s${CODE_COLOR_NOCOLOR}\n" "${PROJECT_DIR}"
+
+eval `ssh-agent`
+
+if [ -f ./load-ssh-keys ] ; then
+    printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} reading ./load-ssh-keys\n"
+    . ./load-ssh-keys
+elif [ -f ~/.ssh/id_rsa ] ; then
+    printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} ssh-add ~/.ssh/id_rsa\n"
+    ssh-add ~/.ssh/id_rsa
+fi
+
+for d in `find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n'` ; do
+    p="$PROJECT_DIR/$d"
+    if [ ! -d "$p/.git" ] ; then
+        printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - ${CODE_COLOR_RED}not a Git repository${CODE_COLOR_NOCOLOR}\n" "$d"
+        continue
+    fi
+
+    if ! git -C "$p" remote | grep -q '^origin$' ; then
+        printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - ${CODE_COLOR_RED}no such remote:  'origin'${CODE_COLOR_NOCOLOR}\n" "$d"
+        continue
+    fi
+
+    if ! git -C "$p" remote get-url origin | grep -F -q 'github.com:sde-gui/' ; then
+        printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - ${CODE_COLOR_RED}foreing remote url${CODE_COLOR_NOCOLOR}\n" "$d"
+        continue
+    fi
+
+    printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - ${CODE_COLOR_GREEN}pushing:${CODE_COLOR_NOCOLOR}\n" "$d"
+
+    git -C "$p" push --all
+    #git -C "$p" push --mirror "git@github.com:geekless/${d}.git"
+done
