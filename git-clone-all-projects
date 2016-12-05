@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -e
+
+case "$1" in
+    --https)
+        use_https="1"
+    ;;
+esac
+
+
+PROJECT_DIR="${PROJECT_DIR-}"
+
+if [ "x$PROJECT_DIR" = "x" ] ; then
+    if [ -d ./.git ] ; then
+        PROJECT_DIR=".."
+    else
+        PROJECT_DIR="."
+    fi
+fi
+
+printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} project directory: ${CODE_COLOR_RED}%s${CODE_COLOR_NOCOLOR}\n" "${PROJECT_DIR}"
+
+if [ -z "$use_https" ] ; then
+    eval `ssh-agent`
+    if [ -f ./load-ssh-keys ] ; then
+        printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} reading ./load-ssh-keys\n"
+        . ./load-ssh-keys
+    elif [ -f ~/.ssh/id_rsa ] ; then
+        printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} ssh-add ~/.ssh/id_rsa\n"
+        ssh-add ~/.ssh/id_rsa
+    fi
+fi
+
+if [ -n "$use_https" ] ; then
+    URLS="`curl https://api.github.com/orgs/sde-gui/repos | grep clone_url | grep -E -o 'https://.*\.git'`"
+else
+    URLS="`curl https://api.github.com/orgs/sde-gui/repos | grep ssh_url | grep -E -o 'git@.*\.git'`"
+fi
+
+cd "$PROJECT_DIR" 
+
+for url in $URLS ; do
+    name="`echo "$url" | grep -o '[^/]\+\.git$' | sed 's/\.git$//'`"
+    if [ -d "$name/.git" ] ; then
+        printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - skipping\n" "$name"
+        continue
+    fi
+
+    printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - fetching %s\n" "$name" "$url"
+    git clone "$url"
+done
