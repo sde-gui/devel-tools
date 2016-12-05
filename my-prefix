@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./config.status --config | grep -o -- "--prefix=[^']\+" | sed 's/--prefix=//'
