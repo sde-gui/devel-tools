@@ -13,6 +13,11 @@ update_repos() {
     fi
 }
 
+install_package() {
+    update_repos
+    sudo apt-get install -y "$1"
+}
+
 install_package_for_command() {
     if ! which "$2" 1>/dev/null 2>/dev/null ; then
         update_repos
@@ -24,6 +29,9 @@ install_package_for_command() {
 
 case "$1" in
     before_install)
+        install_package libmenu-cache-dev
+        install_package libgtk2.0-dev
+        install_package libjansson-dev
         install_package_for_command intltool intltoolize
         install_package_for_command gtk-doc-tools gtkdocize
     ;;
