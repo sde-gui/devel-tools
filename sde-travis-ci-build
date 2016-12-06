@@ -5,6 +5,25 @@ set -x
 
 ####################################################################################
 
+repos_updated=n
+update_repos() {
+    if [ "x-$repos_updated" != "x-y" ] ; then
+        sudo apt-get -qq update
+        repos_updated=y
+    fi
+}
+
+install_package_for_command() {
+    if ! which "$1" 1>/dev/null 2>/dev/null ; then
+        update_repos
+        sudo apt-get install -y "$2"
+    fi
+}
+
+install_package_for_command intltool intltoolize
+
+####################################################################################
+
 test "x-$TRAVIS" = x-true || exit 1
 
 export PROJECT_DIR="$TRAVIS_BUILD_DIR/project-dir"
