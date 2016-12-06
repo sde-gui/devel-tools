@@ -10,6 +10,7 @@ export INSTALL_DIR="${INSTALL_DIR:-/tmp/project-dir-install}"
 export SHARED_PREFIX="${SHARED_PREFIX:-$INSTALL_DIR/shared-prefix}"
 export ENSURE_CLEAN_BUILD="${ENSURE_CLEAN_BUILD-y}"
 export MAKE="${make:-make}"
+export BUILD_PROFILE="${BUILD_PROFILE:-default}"
 
 ####################################################################################
 
@@ -81,6 +82,14 @@ build_project() {
         fi
     fi
 
+    PROFILE_CONFIGURE_OPTIONS=""
+    PROFILE_MAKE_OPTIONS=""
+    PROFILE_MAKE_TARGETS=""
+
+    if [ -f "./.build-profile.$BUILD_PROFILE" ] ; then
+        . "./.build-profile.$BUILD_PROFILE"
+    fi
+
     if [ ! -f ./configure ] ; then
         ./autogen.sh
     fi
@@ -94,7 +103,7 @@ build_project() {
     printf "" > "$TRACE_PKG_CONFIG_LOG"
 
     while true ; do
-        if ./configure --prefix="$INSTALL_DIR/$p" ; then
+        if ./configure --prefix="$INSTALL_DIR/$p" $PROFILE_CONFIGURE_OPTIONS ; then
             break
         fi
         ANY_DEP_INSTALLED=n
@@ -105,13 +114,13 @@ build_project() {
         fi
     done
 
-    $MAKE -j8
-    $MAKE install
+    $MAKE -j2 $PROFILE_MAKE_OPTIONS $PROFILE_MAKE_TARGETS
+    $MAKE $PROFILE_MAKE_OPTIONS install
     $MAKE clean
 
-    ./configure --prefix="${SHARED_PREFIX}"
-    $MAKE -j8
-    $MAKE install
+    ./configure --prefix="${SHARED_PREFIX}" $PROFILE_CONFIGURE_OPTIONS
+    $MAKE -j2 $PROFILE_MAKE_OPTIONS $PROFILE_MAKE_TARGETS
+    $MAKE $PROFILE_MAKE_OPTIONS install
 
     touch "$SHARED_PREFIX/.know-dep-installed.$p"
 }
