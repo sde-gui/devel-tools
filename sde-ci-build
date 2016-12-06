@@ -13,7 +13,9 @@ export MAKE="${make:-make}"
 
 ####################################################################################
 
-export PATH="`pwd`:$PATH"
+if [ -f ./sde-git-clone-all-projects ] ; then
+    export PATH="`pwd`:$PATH"
+fi
 
 mkdir -p "$PROJECT_DIR"
 mkdir -p "$INSTALL_DIR"
@@ -29,7 +31,7 @@ export PKG_CONFIG_PATH="${SHARED_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
 export PATH="${SHARED_PREFIX}/bin:${PATH}"
 export LD_LIBRARY_PATH="${SHARED_PREFIX}/lib:${LD_LIBRARY_PATH}"
 
-git-clone-all-projects --https
+sde-git-clone-all-projects --https
 
 ANY_DEP_INSTALLED=n
 
