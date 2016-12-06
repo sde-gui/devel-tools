@@ -64,5 +64,6 @@ for d in `find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n'` ; 
     save_file "$p/travis_script" \
         "`cat "$DEVEL_TOOLS_PATH/travis_script"`"
 
+    chmod a+x "$p/travis_script"
 done
 
