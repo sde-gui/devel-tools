@@ -19,7 +19,7 @@ if [ "x$PROJECT_DIR" = "x" ] ; then
     fi
 fi
 
-printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} project directory: ${CODE_COLOR_RED}%s${CODE_COLOR_NOCOLOR}\n" "${PROJECT_DIR}"
+printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} project directory: ${CODE_COLOR_RED}%s${CODE_COLOR_NOCOLOR}\n" "${PROJECT_DIR}"
 
 if [ -z "$use_https" ] ; then
     eval `ssh-agent`
