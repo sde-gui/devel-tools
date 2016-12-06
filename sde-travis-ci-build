@@ -21,6 +21,7 @@ install_package_for_command() {
 }
 
 install_package_for_command intltool intltoolize
+install_package_for_command gtkdocize gtk-doc-tools
 
 ####################################################################################
 
