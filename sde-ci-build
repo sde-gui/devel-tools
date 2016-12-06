@@ -71,10 +71,14 @@ install_known_deps() {
 
 build_project() {
     local p="$1"
-    cd "$PROJECT_DIR/$p"
+    if [ "$p" = "$PREFETCHED_PROJECT" ] ; then
+        cd "$PREFETCHED_PROJECT_PATH"
+    else
+        cd "$PROJECT_DIR/$p"
 
-    if [ "x-$ENSURE_CLEAN_BUILD" = "x-y" ] ; then
-        git clean -dfx
+        if [ "x-$ENSURE_CLEAN_BUILD" = "x-y" ] ; then
+            git clean -dfx
+        fi
     fi
 
     if [ ! -f ./configure ] ; then
@@ -103,16 +107,7 @@ build_project() {
 
     $MAKE -j8
     $MAKE install
-
     $MAKE clean
-
-    if [ "x-$ENSURE_CLEAN_BUILD" = "x-y" ] ; then
-        git clean -dfx
-
-        if [ ! -f ./configure ] ; then
-            ./autogen.sh
-        fi
-    fi
 
     ./configure --prefix="${SHARED_PREFIX}"
     $MAKE -j8

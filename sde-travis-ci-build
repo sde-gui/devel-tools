@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+set -x
+
+####################################################################################
+
+test "x-$TRAVIS" = x-true || exit 1
+
+export PROJECT_DIR="$TRAVIS_BUILD_DIR/project-dir"
+export INSTALL_DIR="$TRAVIS_BUILD_DIR/project-dir-install"
+export SHARED_PREFIX="$TRAVIS_BUILD_DIR/project-dir-install/shared-root"
+export ENSURE_CLEAN_BUILD=y
+
+export PROJECTS="$1"
+
+if [ -d "$TRAVIS_BUILD_DIR/.git"
+    export PREFETCHED_PROJECT="$1"
+    export PREFETCHED_PROJECT_PATH="$TRAVIS_BUILD_DIR"
+fi
+
+"$TRAVIS_BUILD_DIR/project-dir/devel-tools/sde-ci-build"
