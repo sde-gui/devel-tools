@@ -20,25 +20,31 @@ install_package_for_command() {
     fi
 }
 
-install_package_for_command intltool intltoolize
-install_package_for_command gtkdocize gtk-doc-tools
-
 ####################################################################################
 
-test "x-$TRAVIS" = x-true || exit 1
+case "$1" in
+    before_install)
+        install_package_for_command intltool intltoolize
+        install_package_for_command gtkdocize gtk-doc-tools
+    ;;
+    build)
+        shift
+        test "x-$TRAVIS" = x-true || exit 1
 
-export PROJECT_DIR="$TRAVIS_BUILD_DIR/project-dir"
-export INSTALL_DIR="$TRAVIS_BUILD_DIR/project-dir-install"
-export SHARED_PREFIX="$TRAVIS_BUILD_DIR/project-dir-install/shared-root"
-export ENSURE_CLEAN_BUILD=y
+        export PROJECT_DIR="$TRAVIS_BUILD_DIR/project-dir"
+        export INSTALL_DIR="$TRAVIS_BUILD_DIR/project-dir-install"
+        export SHARED_PREFIX="$TRAVIS_BUILD_DIR/project-dir-install/shared-root"
+        export ENSURE_CLEAN_BUILD=y
 
-export PROJECTS="$1"
+        export PROJECTS="$1"
 
-if [ -d "$TRAVIS_BUILD_DIR/.git" ] ; then
-    export PREFETCHED_PROJECT="$1"
-    export PREFETCHED_PROJECT_PATH="$TRAVIS_BUILD_DIR"
-fi
+        if [ -d "$TRAVIS_BUILD_DIR/.git" ] ; then
+            export PREFETCHED_PROJECT="$1"
+            export PREFETCHED_PROJECT_PATH="$TRAVIS_BUILD_DIR"
+        fi
 
-export PATH="$TRAVIS_BUILD_DIR/project-dir/devel-tools:$PATH"
+        export PATH="$TRAVIS_BUILD_DIR/project-dir/devel-tools:$PATH"
 
-sde-ci-build
+        sde-ci-build
+    ;;
+esac
