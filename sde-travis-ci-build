@@ -19,4 +19,6 @@ if [ -d "$TRAVIS_BUILD_DIR/.git" ] ; then
     export PREFETCHED_PROJECT_PATH="$TRAVIS_BUILD_DIR"
 fi
 
-"$TRAVIS_BUILD_DIR/project-dir/devel-tools/sde-ci-build"
+export PATH="$TRAVIS_BUILD_DIR/project-dir/devel-tools:$PATH"
+
+sde-ci-build
