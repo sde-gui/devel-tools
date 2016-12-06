@@ -1,0 +1,68 @@
+#!/bin/sh
+
+set -e
+
+if [ "x$PROJECT_DIR" = "x" ] ; then
+    if [ -d ./.git ] ; then
+        PROJECT_DIR=".."
+    else
+        PROJECT_DIR="."
+    fi
+fi
+
+if [ "x$DEVEL_TOOLS_PATH" = "x" ] ; then
+    if [ -f ./template.travis.yml ] ; then
+        DEVEL_TOOLS_PATH="`pwd`"
+    elif [ -f ../devel-tools/template.travis.yml ] ; then
+        DEVEL_TOOLS_PATH="`pwd`/../devel-tools"
+    else
+        exit 1
+    fi
+fi
+
+save_file() {
+    local file_name="$1"
+    local content="$2"
+
+    if [ -f "$file_name" ] ; then
+        if [ "x-`cat "$file_name"`" = "x-$content" ] ; then
+            printf "   %-30s - ${CODE_COLOR_GREEN}already up to date${CODE_COLOR_NOCOLOR}\n" "`basename "$file_name"`"
+            return 0
+        fi
+    fi
+
+    echo "$content" > "${file_name}.tmp"
+    mv "${file_name}.tmp" "${file_name}"
+
+    printf "   %-30s - ${CODE_COLOR_YELLOW}updated${CODE_COLOR_NOCOLOR}\n" "`basename "$file_name"`"
+}
+
+for d in `find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n'` ; do
+    p="$PROJECT_DIR/$d"
+
+    if [ ! -d "$p/.git" ] ; then
+        continue
+    fi
+
+    if [ ! -f "$p/autogen.sh" ] ; then
+        continue
+    fi
+
+    if ! git -C "$p" remote | grep -q '^origin$' ; then
+        continue
+    fi
+
+    if ! git -C "$p" remote get-url origin | grep -F -q 'github.com:sde-gui/' ; then
+        continue
+    fi
+
+    printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - ${CODE_COLOR_YELLOW}updating travis files:${CODE_COLOR_NOCOLOR}\n" "$d"
+
+    save_file "$p/.travis.yml" \
+        "`sed "s/PROJECT_NAME/$d/" < "$DEVEL_TOOLS_PATH/template.travis.yml"`"
+
+    save_file "$p/travis_script" \
+        "`cat "$DEVEL_TOOLS_PATH/travis_script"`"
+
+done
+
