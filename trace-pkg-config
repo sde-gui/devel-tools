@@ -1,0 +1,5 @@
+#!/bin/sh
+if [ -n "$TRACE_PKG_CONFIG_LOG" ] ; then
+    echo ":" "$@" >> "$TRACE_PKG_CONFIG_LOG"
+fi
+${TRACE_PKG_CONFIG_ACTUAL_COMMAND:-pkg-config} "$@"

@@ -1,0 +1,129 @@
+#!/bin/sh
+
+set -e
+set -x
+
+####################################################################################
+
+export PROJECT_DIR="${PROJECT_DIR:-/tmp/project-dir}"
+export INSTALL_DIR="${INSTALL_DIR:-/tmp/project-dir-install}"
+export SHARED_PREFIX="${SHARED_PREFIX:-$INSTALL_DIR/shared-prefix}"
+export ENSURE_CLEAN_BUILD="${ENSURE_CLEAN_BUILD-y}"
+export MAKE="${make:-make}"
+
+####################################################################################
+
+export PATH="`pwd`:$PATH"
+
+mkdir -p "$PROJECT_DIR"
+mkdir -p "$INSTALL_DIR"
+mkdir -p "$SHARED_PREFIX"
+
+if [ "x-$ENSURE_CLEAN_BUILD" = "x-y" ] ; then
+    if [ -d "$SHARED_PREFIX" ] ; then
+        rm -rf "$SHARED_PREFIX"
+    fi
+fi
+
+export PKG_CONFIG_PATH="${SHARED_PREFIX}/lib/pkgconfig:${PKG_CONFIG_PATH}"
+export PATH="${SHARED_PREFIX}/bin:${PATH}"
+export LD_LIBRARY_PATH="${SHARED_PREFIX}/lib:${LD_LIBRARY_PATH}"
+
+git-clone-all-projects --https
+
+ANY_DEP_INSTALLED=n
+
+####################################################################################
+
+install_known_dep() {
+    if [ -f "$SHARED_PREFIX/.know-dep-installed.$1" ] ; then
+        echo "=> dep: $1: already installed"
+        return 0
+    fi
+    echo "=> dep: $1: building and installing:"
+    (build_project "$1")
+    echo "=> dep: $1: successfully installed"
+    ANY_DEP_INSTALLED=y
+}
+
+install_known_deps() {
+    if echo "$1" | grep -q "sde-utils-0" ; then
+        install_known_dep "libsde-utils"
+    fi
+    if echo "$1" | grep -q "sde-utils-x11-0" ; then
+        install_known_dep "libsde-utils-x11"
+    fi
+    if echo "$1" | grep -q "sde-utils-jansson-0" ; then
+        install_known_dep "libsde-utils-jansson"
+    fi
+    if echo "$1" | grep -q "sde-utils-gtk-0" ; then
+        install_known_dep "libsde-utils-gtk"
+    fi
+    if echo "$1" | grep -q "libsmfm-core" ; then
+        install_known_dep "libsmfm-core"
+    fi
+    if echo "$1" | grep -q "libsmfm-gtk2" ; then
+        install_known_dep "libsmfm-gtk"
+    fi
+}
+
+build_project() {
+    local p="$1"
+    cd "$PROJECT_DIR/$p"
+
+    if [ "x-$ENSURE_CLEAN_BUILD" = "x-y" ] ; then
+        git clean -dfx
+    fi
+
+    if [ ! -f ./configure ] ; then
+        ./autogen.sh
+    fi
+
+    export TRACE_PKG_CONFIG_LOG="$PROJECT_DIR/$p/.trace-pkg-config.log"
+    if [ "x-$PKG_CONFIG" != x-trace-pkg-config ] ; then
+        export TRACE_PKG_CONFIG_ACTUAL_COMMAND="$PKG_CONFIG"
+        export PKG_CONFIG=trace-pkg-config
+    fi
+
+    printf "" > "$TRACE_PKG_CONFIG_LOG"
+
+    while true ; do
+        if ./configure --prefix="$INSTALL_DIR/$p" ; then
+            break
+        fi
+        ANY_DEP_INSTALLED=n
+        install_known_deps "`cat "$TRACE_PKG_CONFIG_LOG"`"
+        if [ "x-$ANY_DEP_INSTALLED" = "x-n" ] ; then
+            echo "=> failed to configure $p"
+            return 1
+        fi
+    done
+
+    $MAKE -j8
+    $MAKE install
+
+    $MAKE clean
+
+    if [ "x-$ENSURE_CLEAN_BUILD" = "x-y" ] ; then
+        git clean -dfx
+
+        if [ ! -f ./configure ] ; then
+            ./autogen.sh
+        fi
+    fi
+
+    ./configure --prefix="${SHARED_PREFIX}"
+    $MAKE -j8
+    $MAKE install
+
+    touch "$SHARED_PREFIX/.know-dep-installed.$p"
+}
+
+####################################################################################
+
+PROJECTS="${PROJECTS:-`find "$PROJECT_DIR" -mindepth 1 -maxdepth 1 -type d -printf '%P\n'`}"
+
+for p in $PROJECTS ; do
+    (build_project $p)
+done
+
