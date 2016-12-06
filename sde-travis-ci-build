@@ -14,7 +14,7 @@ export ENSURE_CLEAN_BUILD=y
 
 export PROJECTS="$1"
 
-if [ -d "$TRAVIS_BUILD_DIR/.git"
+if [ -d "$TRAVIS_BUILD_DIR/.git" ] ; then
     export PREFETCHED_PROJECT="$1"
     export PREFETCHED_PROJECT_PATH="$TRAVIS_BUILD_DIR"
 fi
