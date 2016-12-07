@@ -71,6 +71,10 @@ fi
         mkdir m4
     fi
 
+    if grep -q "^AM_GNU_GETTEXT" ./configure.ac ; then
+        $AUTOPOINT --force
+    fi
+
     if grep -q "^AM_GLIB_GNU_GETTEXT" ./configure.ac ; then
         $GLIB_GETTEXTIZE --force --copy
     fi
