@@ -79,9 +79,7 @@ fi
 
     test -f aclocal.m4 && rm aclocal.m4
     test -d m4 && rm -r m4
-    if grep -F -q 'AC_CONFIG_MACRO_DIRS([m4])' ./configure.ac ; then
-        mkdir m4
-    fi
+    mkdir m4
 
     if grep -q "^AM_GNU_GETTEXT" ./configure.ac ; then
         $AUTOPOINT --force
