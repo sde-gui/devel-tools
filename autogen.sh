@@ -91,6 +91,12 @@ fi
 
     if grep -q "^GTK_DOC_CHECK" ./configure.ac ; then
         $GTKDOCIZE --copy
+        set +x
+        echo
+        echo "=> If you are going to 'make dist', please add configure option --enable-gtk-doc."
+        echo "=> Otherwise, API documents won't be correctly built by gtk-doc."
+        echo
+        set -x
     fi
 
     if grep -E -q "^(AC_PROG_INTLTOOL|IT_PROG_INTLTOOL)" ./configure.ac ; then
