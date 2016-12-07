@@ -31,6 +31,18 @@ export GTKDOCIZE="${GTKDOCIZE:-gtkdocize}"
 
 ###############################################################################
 
+if [[ "`uname`" == OpenBSD ]] ; then
+    V="`ls -1 /usr/local/bin/autoreconf-* | env LC_ALL=C sort | tail -n 1`"
+    V="${V##*-}"
+    export AUTOCONF_VERSION="${AUTOCONF_VERSION:-$V}"
+
+    V="`ls -1 /usr/local/bin/automake-* | env LC_ALL=C sort | tail -n 1`"
+    V="${V##*-}"
+    export AUTOMAKE_VERSION="${AUTOMAKE_VERSION:-$V}"
+fi
+
+###############################################################################
+
 AM_INSTALLED_VERSION=$($AUTOMAKE --version | sed -e '2,$ d' -e 's/.* \([0-9]*\.[0-9]*\).*/\1/')
 
 case "$AM_INSTALLED_VERSION" in
