@@ -17,10 +17,10 @@ printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} project directory: ${CODE_COLO
 eval `ssh-agent`
 
 if [ -f ./load-ssh-keys ] ; then
-    printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} reading ./load-ssh-keys\n"
+    printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} reading ./load-ssh-keys\n"
     . ./load-ssh-keys
 elif [ -f ~/.ssh/id_rsa ] ; then
-    printf "${CODE_COLOR_CYAN}->${CODE_COLOR_NOCOLOR} ssh-add ~/.ssh/id_rsa\n"
+    printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} ssh-add ~/.ssh/id_rsa\n"
     ssh-add ~/.ssh/id_rsa
 fi
 
