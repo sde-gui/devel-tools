@@ -31,7 +31,7 @@ export GTKDOCIZE="${GTKDOCIZE:-gtkdocize}"
 
 ###############################################################################
 
-if [[ "`uname`" == OpenBSD ]] ; then
+if [ "x`uname`" = xOpenBSD ] ; then
     V="`ls -1 /usr/local/bin/autoreconf-* | env LC_ALL=C sort | tail -n 1`"
     V="${V##*-}"
     export AUTOCONF_VERSION="${AUTOCONF_VERSION:-$V}"
@@ -49,6 +49,7 @@ case "$AM_INSTALLED_VERSION" in
     1.1[1-6])
         ;;
     *)
+        set +x
         echo
         echo "You must have automake 1.11...1.15 installed."
         echo "Install the appropriate package for your distribution,"
