@@ -1,0 +1,88 @@
+#!/bin/bash
+
+list_executable_binaries()
+{
+	local elf_s="`printf '\x7FELF'`"
+	find "$1" -type f -executable | while read f ; do
+		local s="`head -c 4 "$f"`"
+		if [ "x$s" = "x$elf_s" ] ; then
+			printf "%s\n" "$f"
+		fi
+	done
+}
+
+read_shared_libraries()
+{
+	(LC_ALL=C readelf -d "$1" 2>/dev/null) | sed -nr 's/.*Shared library: \[(.*)\].*/\1/p' |  sort
+}
+
+read_external_shared_libraries()
+{
+	local f="$1"
+	local prefix="$2"
+	read_shared_libraries "$f" | while read lib ; do
+		if [ -f "$prefix/lib/$lib" ] ; then
+			continue
+		elif  [ -f "$prefix/lib64/$lib" ] ; then
+			continue
+		else
+			printf "%s\n" "$lib"
+		fi
+	done
+}
+
+echo_prefixed()
+{
+	local line_prefix="$1"
+	local content="$2"
+	
+	printf "%s" "$content" | while read l ; do
+		printf "%s%s\n" "$line_prefix" "$l"
+	done
+}
+
+prefix="$1"
+
+executable_binaries="`list_executable_binaries "$prefix"`"
+
+file_count="$(echo "$executable_binaries" | wc -l)"
+
+all_libs="$(
+	(for f in $executable_binaries ; do
+		read_external_shared_libraries "$f" "$prefix"
+	done) | sort | uniq
+)"
+
+echo "Shared libraries required by the package:"
+echo_prefixed "    " "$all_libs"
+echo
+
+if false ; then # not used
+if [ "$file_count" -gt 1 ] ; then
+
+	common_libs=""
+
+	for f in $executable_binaries ; do
+		common_libs="$(read_external_shared_libraries "$f" "$prefix")"
+		break
+	done
+
+	for f in $executable_binaries ; do
+		libs="$(read_external_shared_libraries "$f" "$prefix")"
+		common_libs="$(comm -12 <( echo "$common_libs" ) <( echo "$libs" ) )"
+	done
+
+	echo "Shared libraries required by each exetutable in the package:"
+	echo_prefixed "    " "$common_libs"
+	echo
+
+	for f in $executable_binaries ; do
+		libs="$(read_external_shared_libraries "$f" "$prefix")"
+		libs="$(comm -13 <( echo "$common_libs" ) <( echo "$libs" ) )"
+		echo "Shared libraries required by $f"
+		echo_prefixed "    " "$libs"
+		echo
+	done
+
+fi
+fi
