@@ -5,35 +5,19 @@ set -x
 
 ####################################################################################
 
-repos_updated=n
-update_repos() {
-    if [ "x-$repos_updated" != "x-y" ] ; then
-        sudo apt-get -qq update
-        repos_updated=y
-    fi
-}
-
-install_package() {
-    update_repos
-    sudo apt-get install -y "$1"
-}
-
-install_package_for_command() {
-    if ! which "$2" 1>/dev/null 2>/dev/null ; then
-        update_repos
-        sudo apt-get install -y "$1"
-    fi
-}
+if [ -f ./sde-ci-common ] ; then
+    . ./sde-ci-common
+elif [ -f devel-tools/sde-ci-common ] ; then
+    . devel-tools/sde-ci-common
+else
+    . sde-ci-common
+fi
 
 ####################################################################################
 
 case "$1" in
     before_install)
-        install_package libmenu-cache1-dev
-        install_package libgtk2.0-dev
-        install_package libjansson-dev
-        install_package_for_command intltool intltoolize
-        install_package_for_command gtk-doc-tools gtkdocize
+        install_common_dependencies
     ;;
     build)
         shift

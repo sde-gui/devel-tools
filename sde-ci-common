@@ -1,0 +1,147 @@
+#!/bin/sh
+
+####################################################################################
+
+if [ "`id -u`" = "0" ] ; then
+    SUDO=
+else
+    SUDO=sudo
+fi
+
+####################################################################################
+
+PRETTY_NAME=
+NAME=
+VERSION_ID=
+VERSION=
+ID=
+ID_LIKE=
+
+if [ -f /etc/os-release ] ; then
+    . /etc/os-release
+fi
+
+OS_PRETTY_NAME="${PRETTY_NAME:-unknown}"
+OS_NAME="${NAME:-unknown}"
+OS_VERSION_ID="${VERSION_ID:-unknown}"
+OS_VERSION="${VERSION:-unknown}"
+OS_ID="${ID:-unknown}"
+OS_ID_LIKE="${ID_LIKE:-unknown}"
+
+####################################################################################
+
+repos_updated=n
+update_repos() {
+    if [ "x-$repos_updated" = "x-y" ] ; then
+        return 0
+    fi
+
+    case "$OS_ID" in
+        debian | ubuntu)
+            $SUDO apt-get -qq update
+        ;;
+        centos)
+            #$SUDO yum -y update
+            :
+        ;;
+        arch)
+            $SUDO pacman -Syq
+        ;;
+        *)
+            echo "unknown OS_ID: $OS_ID"
+            return 1
+        ;;
+    esac
+
+    repos_updated=y
+    return 0
+}
+
+install_package() {
+    update_repos
+
+    local package_name="`fix_package_name "$1"`"
+
+    case "$OS_ID" in
+        debian | ubuntu)
+            $SUDO apt-get install -q -y --no-install-recommends $package_name
+        ;;
+        centos)
+            $SUDO yum -q -y install $package_name
+        ;;
+        arch)
+            $SUDO pacman -Sq --noconfirm $package_name
+        ;;
+        *)
+            echo "unknown OS_ID: $OS_ID"
+            return 1
+        ;;
+    esac
+
+}
+
+install_package_for_command() {
+    if ! which "$2" 1>/dev/null 2>/dev/null ; then
+        install_package "$1"
+    fi
+}
+
+fix_package_name() {
+    local package_name="$1"
+
+    case "${OS_ID}-${OS_VERSION_ID}" in
+        ubuntu-12.04)
+            case "$package_name" in
+                libmenu-cache-dev) package_name=libmenu-cache1-dev ;;
+            esac
+        ;;
+        centos-7)
+            case "$package_name" in
+                libmenu-cache-dev) package_name=menu-cache-devel ;;
+                libgtk2.0-dev) package_name=gtk2-devel ;;
+                libjansson-dev) package_name=jansson-devel ;;
+                gtk-doc-tools) package_name=gtk-doc ;;
+            esac
+        ;;
+        arch-unknown)
+            case "$package_name" in
+                libmenu-cache-dev) package_name=menu-cache ;;
+                libgtk2.0-dev) package_name=gtk2 ;;
+                libjansson-dev) package_name=jansson ;;
+                gtk-doc-tools) package_name=gtk-doc ;;
+            esac
+        ;;
+    esac
+
+    echo "$package_name"
+}
+
+####################################################################################
+
+prepare_devel_environment() {
+    install_package git
+    install_package gcc
+    install_package make
+    install_package automake
+    install_package autoconf
+}
+
+####################################################################################
+
+install_common_dependencies() {
+
+    case "${OS_ID}-${OS_VERSION_ID}" in
+        centos-7)
+            install_package epel-release
+        ;;
+    esac
+
+    install_package libmenu-cache-dev
+    install_package libgtk2.0-dev
+    install_package libjansson-dev
+    install_package_for_command intltool intltoolize
+    install_package_for_command gtk-doc-tools gtkdocize
+}
+
+####################################################################################
+
