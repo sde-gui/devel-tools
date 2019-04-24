@@ -51,7 +51,7 @@ case "$AM_INSTALLED_VERSION" in
     *)
         set +x
         echo
-        echo "You must have automake 1.11...1.15 installed."
+        echo "You must have automake 1.11...1.16 installed."
         echo "Install the appropriate package for your distribution,"
         echo "or get the source tarball at http://ftp.gnu.org/gnu/automake/"
         exit 1
