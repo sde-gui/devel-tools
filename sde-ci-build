@@ -39,7 +39,7 @@ ANY_DEP_INSTALLED=n
 ####################################################################################
 
 install_known_dep() {
-    if [ -f "$SHARED_PREFIX/.know-dep-installed.$1" ] ; then
+    if [ -f "$SHARED_PREFIX/.known-dep-installed.$1" ] ; then
         echo "=> dep: $1: already installed"
         return 0
     fi
@@ -122,7 +122,7 @@ build_project() {
     $MAKE -j2 $PROFILE_MAKE_OPTIONS $PROFILE_MAKE_TARGETS
     $MAKE $PROFILE_MAKE_OPTIONS install
 
-    touch "$SHARED_PREFIX/.know-dep-installed.$p"
+    touch "$SHARED_PREFIX/.known-dep-installed.$p"
 }
 
 ####################################################################################
