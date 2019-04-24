@@ -1,0 +1,34 @@
+#!/bin/sh
+
+set -e
+set -x
+
+####################################################################################
+
+DEVEL_TOOLS=''
+
+if [ -f ./sde-ci-common ] ; then
+    DEVEL_TOOLS="`pwd`"
+elif [ -f devel-tools/sde-ci-common ] ; then
+    DEVEL_TOOLS="`pwd`/devel-tools"
+    . devel-tools/sde-ci-common
+else
+    case "$0" in (/*) DEVEL_TOOLS="`dirname "$0"`" ;; esac
+fi
+
+if [ -n "$DEVEL_TOOLS" ] ; then
+    export PATH="$DEVEL_TOOLS:$PATH"
+fi
+
+. sde-ci-common
+
+####################################################################################
+
+prepare_devel_environment
+install_common_dependencies
+
+export PROJECTS="$@"
+
+sde-ci-build
+
+
