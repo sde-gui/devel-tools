@@ -124,6 +124,7 @@ prepare_devel_environment() {
     install_package make
     install_package automake
     install_package autoconf
+    install_package curl
 }
 
 ####################################################################################
