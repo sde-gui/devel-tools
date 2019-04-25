@@ -19,6 +19,15 @@ ID_LIKE=
 
 if [ -f /etc/os-release ] ; then
     . /etc/os-release
+elif [ -f /usr/lib/os-release ] ; then
+    . /usr/lib/os-release
+elif which -s freebsd-version ; then
+    PRETTY_NAME="FreeBSD"
+    NAME="FreeBSD"
+    VERSION_ID="`freebsd-version`"
+    VERSION="`freebsd-version`"
+    ID="freebsd"
+    ID_LIKE="freebsd"
 fi
 
 OS_PRETTY_NAME="${PRETTY_NAME:-unknown}"
@@ -47,6 +56,9 @@ update_repos() {
         arch)
             $SUDO pacman -Syq
         ;;
+        freebsd)
+            $SUDO pkg update
+        ;;
         *)
             echo "unknown OS_ID: $OS_ID"
             return 1
@@ -71,6 +83,9 @@ install_package() {
         ;;
         arch)
             $SUDO pacman -Sq --noconfirm $package_name
+        ;;
+        freebsd)
+            $SUDO pkg install -y $package_name
         ;;
         *)
             echo "unknown OS_ID: $OS_ID"
@@ -109,6 +124,17 @@ fix_package_name() {
                 libgtk2.0-dev) package_name=gtk2 ;;
                 libjansson-dev) package_name=jansson ;;
                 gtk-doc-tools) package_name=gtk-doc ;;
+                autopoint) package_name=gettext ;;
+            esac
+        ;;
+        freebsd-*)
+            case "$package_name" in
+                libmenu-cache-dev) package_name=menu-cache ;;
+                libgtk2.0-dev) package_name=gtk2 ;;
+                libjansson-dev) package_name=jansson ;;
+                gtk-doc-tools) package_name=gtk-doc ;;
+                autopoint) package_name=gettext ;;
+                make) package_name=gmake ;;
             esac
         ;;
     esac
@@ -124,6 +150,8 @@ prepare_devel_environment() {
     install_package make
     install_package automake
     install_package autoconf
+    install_package gettext
+    install_package autopoint
     install_package curl
 }
 
