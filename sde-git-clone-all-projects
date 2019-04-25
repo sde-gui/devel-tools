@@ -32,11 +32,28 @@ if [ -z "$use_https" ] ; then
     fi
 fi
 
-if [ -n "$use_https" ] ; then
-    URLS="`curl https://api.github.com/orgs/sde-gui/repos | grep clone_url | grep -E -o 'https://.*\.git'`"
-else
-    URLS="`curl https://api.github.com/orgs/sde-gui/repos | grep ssh_url | grep -E -o 'git@.*\.git'`"
-fi
+for i in 1 2 3 4 5 ; do
+
+    set +e
+
+    REPOS="`curl https://api.github.com/orgs/sde-gui/repos`"
+
+    if [ -n "$use_https" ] ; then
+        URLS="`echo "$REPOS" | grep clone_url | grep -E -o 'https://.*\.git'`"
+    else
+        URLS="`echo "$REPOS" | grep ssh_url | grep -E -o 'git@.*\.git'`"
+    fi
+
+    set -e
+
+    if ! echo "$URLS" | grep -q "\.git" ; then
+        printf "Failed to read repos list. Something went wrong.\nReceived content:\n%s\n" "$REPOS"
+        sleep 15
+    else
+        break
+    fi
+
+done
 
 cd "$PROJECT_DIR" 
 
