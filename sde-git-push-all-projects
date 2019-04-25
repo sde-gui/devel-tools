@@ -14,7 +14,7 @@ fi
 
 printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} project directory: ${CODE_COLOR_RED}%s${CODE_COLOR_NOCOLOR}\n" "${PROJECT_DIR}"
 
-eval `ssh-agent`
+eval `ssh-agent -s`
 
 if [ -f ./load-ssh-keys ] ; then
     printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} reading ./load-ssh-keys\n"
