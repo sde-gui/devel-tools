@@ -5,6 +5,12 @@ set -x
 
 ####################################################################################
 
+case "$OS_ID" in
+    *bsd)
+        MAKE="${MAKE:-gmake}"
+    ;;
+esac
+
 export PROJECT_DIR="${PROJECT_DIR:-/tmp/project-dir}"
 export INSTALL_DIR="${INSTALL_DIR:-/tmp/project-dir-install}"
 export SHARED_PREFIX="${SHARED_PREFIX:-$INSTALL_DIR/shared-prefix}"

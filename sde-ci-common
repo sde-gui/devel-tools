@@ -30,12 +30,12 @@ elif which -s freebsd-version ; then
     ID_LIKE="freebsd"
 fi
 
-OS_PRETTY_NAME="${PRETTY_NAME:-unknown}"
-OS_NAME="${NAME:-unknown}"
-OS_VERSION_ID="${VERSION_ID:-unknown}"
-OS_VERSION="${VERSION:-unknown}"
-OS_ID="${ID:-unknown}"
-OS_ID_LIKE="${ID_LIKE:-unknown}"
+export OS_PRETTY_NAME="${PRETTY_NAME:-unknown}"
+export OS_NAME="${NAME:-unknown}"
+export OS_VERSION_ID="${VERSION_ID:-unknown}"
+export OS_VERSION="${VERSION:-unknown}"
+export OS_ID="${ID:-unknown}"
+export OS_ID_LIKE="${ID_LIKE:-unknown}"
 
 ####################################################################################
 
