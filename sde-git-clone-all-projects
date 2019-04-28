@@ -2,11 +2,23 @@
 
 set -e
 
-case "$1" in
-    --https)
-        use_https="1"
-    ;;
-esac
+use_https=""
+update_existing="1"
+
+while [ -n "$1" ] ; do
+    case "$1" in
+        --https)
+            use_https="1"
+        ;;
+        --no-update)
+            update_existing=""
+        ;;
+        --update)
+            update_existing="1"
+        ;;
+    esac
+    shift
+done
 
 
 PROJECT_DIR="${PROJECT_DIR-}"
@@ -60,7 +72,12 @@ cd "$PROJECT_DIR"
 for url in $URLS ; do
     name="`echo "$url" | grep -o '[^/]\+\.git$' | sed 's/\.git$//'`"
     if [ -d "$name/.git" ] ; then
-        printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - skipping\n" "$name"
+        if [ -n "$update_existing" ] ; then
+            printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - updating\n" "$name"
+            (cd "$name" && git pull --all)
+        else
+            printf "${CODE_COLOR_BLUE}=>${CODE_COLOR_NOCOLOR} %-30s - skipping\n" "$name"
+        fi
         continue
     fi
 
