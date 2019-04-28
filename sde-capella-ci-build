@@ -17,6 +17,7 @@ else
 fi
 
 if [ -n "$DEVEL_TOOLS" ] ; then
+    export DEVEL_TOOLS
     export PATH="$DEVEL_TOOLS:$PATH"
 fi
 

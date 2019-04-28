@@ -4,6 +4,7 @@ set -e
 
 use_https=""
 update_existing="1"
+prefer_cached_repos_list=""
 
 while [ -n "$1" ] ; do
     case "$1" in
@@ -16,10 +17,33 @@ while [ -n "$1" ] ; do
         --update)
             update_existing="1"
         ;;
+        --prefer-cached-repos-list)
+            prefer_cached_repos_list="1"
+        ;;
     esac
     shift
 done
 
+
+####################################################################################
+
+DEVEL_TOOLS=''
+
+if [ -f ./sde-ci-common ] ; then
+    DEVEL_TOOLS="`pwd`"
+elif [ -f devel-tools/sde-ci-common ] ; then
+    DEVEL_TOOLS="`pwd`/devel-tools"
+    . devel-tools/sde-ci-common
+else
+    case "$0" in (/*) DEVEL_TOOLS="`dirname "$0"`" ;; esac
+fi
+
+if [ -n "$DEVEL_TOOLS" ] ; then
+    export DEVEL_TOOLS
+    export PATH="$DEVEL_TOOLS:$PATH"
+fi
+
+####################################################################################
 
 PROJECT_DIR="${PROJECT_DIR-}"
 
@@ -44,11 +68,19 @@ if [ -z "$use_https" ] ; then
     fi
 fi
 
-for i in 1 2 3 4 5 ; do
+if [ -n "$prefer_cached_repos_list" -a -n "$DEVEL_TOOLS" -a -f "$DEVEL_TOOLS/sde-repos-cached-response" ] ; then
+    REPOS_CACHED_RESPONSE="`cat "$DEVEL_TOOLS/sde-repos-cached-response"`"
+fi
+
+for i in 1 2 3 ; do
 
     set +e
 
-    REPOS="`curl https://api.github.com/orgs/sde-gui/repos`"
+    if [ -n "$REPOS_CACHED_RESPONSE" ] ; then
+        REPOS="$REPOS_CACHED_RESPONSE"
+    else
+        REPOS="`curl https://api.github.com/orgs/sde-gui/repos`"
+    fi
 
     if [ -n "$use_https" ] ; then
         URLS="`echo "$REPOS" | grep clone_url | grep -E -o 'https://.*\.git'`"
@@ -60,7 +92,12 @@ for i in 1 2 3 4 5 ; do
 
     if ! echo "$URLS" | grep -q "\.git" ; then
         printf "Failed to read repos list. Something went wrong.\nReceived content:\n%s\n" "$REPOS"
-        sleep 15
+        if [ -n "$DEVEL_TOOLS" -a -f "$DEVEL_TOOLS/sde-repos-cached-response" ] ; then
+            printf "Trying to use the cached repos list\n"
+            REPOS_CACHED_RESPONSE="`cat "$DEVEL_TOOLS/sde-repos-cached-response"`"
+        else
+            sleep 15
+        fi
     else
         break
     fi
