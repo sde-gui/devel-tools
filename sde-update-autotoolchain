@@ -1,0 +1,72 @@
+#!/bin/sh
+
+if [ "x$BASH_VERSION" != "x" ] ; then
+    set -o nounset
+fi
+
+set -e
+#set -x
+
+####################################################################################
+
+die(){
+    printf "%s: %s\n" \
+        "$0" "$1"
+    exit 1
+}
+
+####################################################################################
+
+SRC_DIR="${SRC_DIR:-}"
+test -z "$SRC_DIR" && SRC_DIR="`pwd`"
+
+####################################################################################
+
+DEVEL_TOOLS="${DEVEL_TOOLS:-}"
+
+if [ -z "$DEVEL_TOOLS" ] ; then
+    MY_PATH="`which "$0"`"
+    if [ -f "$MY_PATH" ] ; then
+        DEVEL_TOOLS="`dirname "$MY_PATH"`"
+    fi
+fi
+
+####################################################################################
+
+test x"$DEVEL_TOOLS" = x"$SRC_DIR" && die \
+    "error: the source path points to the same location as the DEVEL_TOOLS path: $SRC_DIR"
+
+####################################################################################
+
+test ! -d "$DEVEL_TOOLS/m4-sde" && die \
+    " error: directory not found: $DEVEL_TOOLS/m4-sde"
+
+####################################################################################
+
+if [ ! -f "$SRC_DIR/configure.ac" ] ; then
+    set +x
+    printf "%s: error: file not found: %q\n" \
+        "$0" "$SRC_DIR/configure.ac"
+    exit 1
+fi
+
+####################################################################################
+
+enumerate_m4_sde_files(){
+    cd "$DEVEL_TOOLS"
+    (grep -o 'SDE_[A-Z0-9_]\+' "$SRC_DIR/configure.ac" || true) | sort | uniq | (while read macro_name ; do
+        grep -r -l "AC_DEFUN.*${macro_name}" m4-sde || true
+    done) | sort | uniq
+}
+
+copy_file(){
+    printf "Copying file %s\n" "$1"
+    cp "$DEVEL_TOOLS/$1" "$SRC_DIR/$1" || die "error: failed to copy file: $1"
+}
+
+for m4_file in `enumerate_m4_sde_files` ; do
+    mkdir -p "$SRC_DIR/m4-sde"
+    copy_file "$m4_file"
+done
+
+copy_file "autogen.sh"

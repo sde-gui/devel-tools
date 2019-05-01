@@ -9,6 +9,7 @@ set -xe
 ###############################################################################
 
 SRC_DIR="${SRC_DIR:-}"
+test -z "$SRC_DIR" && SRC_DIR="`pwd`"
 
 AC_VERSION="${AC_VERSION:-}"
 AM_VERSION="${AC_VERSION:-}"
@@ -60,10 +61,6 @@ esac
 
 ###############################################################################
 
-if [ -z "$SRC_DIR" ] ; then
-    SRC_DIR="`pwd`"
-fi
-
 if echo "$SRC_DIR" | grep -E -q '[[:space:]]' ; then
     printf "\nThe source path \"%q\" contains whitespace characters.\nPlease fix it.\n" "$SRC_DIR"
     exit 1
@@ -73,6 +70,10 @@ fi
 
 (
     cd "$SRC_DIR"
+
+    ACLOCAL_ARG="$ACLOCAL_ARG -I m4"
+    test -d m4-sde && ACLOCAL_ARG="$ACLOCAL_ARG -I m4-sde"
+    test -d m4-static && ACLOCAL_ARG="$ACLOCAL_ARG -I m4-static"
 
     if [ "x${ACLOCAL_DIR}" != "x" ]; then
         ACLOCAL_ARG="$ACLOCAL_ARG -I $ACLOCAL_DIR"
