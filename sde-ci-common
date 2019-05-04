@@ -168,6 +168,7 @@ install_common_dependencies() {
     install_package libmenu-cache-dev
     install_package libgtk2.0-dev
     install_package libjansson-dev
+    install_package libgtop2-dev
     install_package_for_command intltool intltoolize
     install_package_for_command gtk-doc-tools gtkdocize
 }
