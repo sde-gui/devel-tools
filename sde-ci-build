@@ -88,6 +88,9 @@ install_known_deps() {
     if echo "$1" | grep -q "libsmfm-gtk2" ; then
         install_known_dep "libsmfm-gtk"
     fi
+    if echo "$1" | grep -q "waterline" ; then
+        install_known_dep "waterline"
+    fi
 }
 
 build_project() {
