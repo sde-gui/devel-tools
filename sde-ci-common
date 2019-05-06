@@ -123,6 +123,9 @@ fix_package_name() {
                 libmenu-cache-dev) package_name=menu-cache ;;
                 libgtk2.0-dev) package_name=gtk2 ;;
                 libjansson-dev) package_name=jansson ;;
+                libgtop2-dev) package_name=libgtop2 ;;
+                libxml2-dev) package_name=libxml2 ;;
+                g++) package_name=gcc ;;
                 gtk-doc-tools) package_name=gtk-doc ;;
                 autopoint) package_name=gettext ;;
             esac
@@ -146,7 +149,7 @@ fix_package_name() {
 
 prepare_devel_environment() {
     install_package git
-    install_package gcc
+    install_package gcc g++
     install_package make
     install_package automake
     install_package autoconf
@@ -168,7 +171,8 @@ install_common_dependencies() {
     install_package libmenu-cache-dev
     install_package libgtk2.0-dev
     install_package libjansson-dev
-    install_package libgtop2-dev
+    install_package libgtop2-dev         # for waterline-plugin-multiload
+    install_package libxml2-dev txt2tags # for qk
     install_package_for_command intltool intltoolize
     install_package_for_command gtk-doc-tools gtkdocize
 }
