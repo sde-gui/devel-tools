@@ -172,7 +172,8 @@ install_common_dependencies() {
     install_package libgtk2.0-dev
     install_package libjansson-dev
     install_package libgtop2-dev         # for waterline-plugin-multiload
-    install_package libxml2-dev txt2tags # for qk
+    install_package libxml2-dev          # for qk
+    install_package txt2tags             # for qk
     install_package_for_command intltool intltoolize
     install_package_for_command gtk-doc-tools gtkdocize
 }
