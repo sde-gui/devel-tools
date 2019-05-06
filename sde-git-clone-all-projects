@@ -68,7 +68,9 @@ if [ -z "$use_https" ] ; then
     fi
 fi
 
-if [ -n "$prefer_cached_repos_list" -a -n "$DEVEL_TOOLS" -a -f "$DEVEL_TOOLS/sde-repos-cached-response" ] ; then
+REPOS_CACHED_RESPONSE_PATH="$DEVEL_TOOLS/sde-repos-cached-response"
+
+if [ -n "$prefer_cached_repos_list" -a -n "$DEVEL_TOOLS" -a -f "$REPOS_CACHED_RESPONSE_PATH" ] ; then
     REPOS_CACHED_RESPONSE="`cat "$DEVEL_TOOLS/sde-repos-cached-response"`"
 fi
 
@@ -92,13 +94,18 @@ for i in 1 2 3 ; do
 
     if ! echo "$URLS" | grep -q "\.git" ; then
         printf "Failed to read repos list. Something went wrong.\nReceived content:\n%s\n" "$REPOS"
-        if [ -n "$DEVEL_TOOLS" -a -f "$DEVEL_TOOLS/sde-repos-cached-response" ] ; then
+        if [ -n "$DEVEL_TOOLS" -a -f "$REPOS_CACHED_RESPONSE_PATH" ] ; then
             printf "Trying to use the cached repos list\n"
-            REPOS_CACHED_RESPONSE="`cat "$DEVEL_TOOLS/sde-repos-cached-response"`"
+            REPOS_CACHED_RESPONSE="`cat "$REPOS_CACHED_RESPONSE_PATH"`"
         else
             sleep 15
         fi
     else
+        if [ -z "$REPOS_CACHED_RESPONSE" -a -n "$DEVEL_TOOLS" -a -w "$REPOS_CACHED_RESPONSE_PATH" ] ; then
+            printf "${CODE_COLOR_CYAN}=>${CODE_COLOR_NOCOLOR} updating cache: ${CODE_COLOR_RED}%s${CODE_COLOR_NOCOLOR}\n" "$REPOS_CACHED_RESPONSE_PATH"
+
+            echo "$REPOS" | grep 'clone_url\|ssh_url' | sort > "$REPOS_CACHED_RESPONSE_PATH"
+        fi
         break
     fi
 
