@@ -59,13 +59,20 @@ enumerate_m4_sde_files(){
     done) | sort | uniq
 }
 
+make_dir(){
+    if [ ! -e "$SRC_DIR/$1" ] ; then
+        printf "Creating directory %s\n" "$1"
+        mkdir -p "$SRC_DIR/$1"
+    fi
+}
+
 copy_file(){
     printf "Copying file %s\n" "$1"
     cp "$DEVEL_TOOLS/$1" "$SRC_DIR/$1" || die "error: failed to copy file: $1"
 }
 
 for m4_file in `enumerate_m4_sde_files` ; do
-    mkdir -p "$SRC_DIR/m4-sde"
+    make_dir "m4-sde"
     copy_file "$m4_file"
 done
 
