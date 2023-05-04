@@ -18,7 +18,7 @@ die(){
 
 (git status >/dev/null) || die "failed: git status"
 
-if test -n "`git status --ignored --short`" ; then
+if test -n "`git status --ignored --short | grep -v '^.. configure[.]ac$'`" ; then
     echo "git status:"
     git status --ignored --short
     die "this command should be run on a clean repo"
